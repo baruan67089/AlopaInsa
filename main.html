@@ -558,3 +558,73 @@
         await refreshRound();
       }
 
+      async function loadPlayersPaged() {
+        const roundId = activeRoundId;
+        if (!roundId) throw new Error("Round belum siap");
+
+        const off = parseInt($("playersOffset").value || "0", 10);
+        const lim = parseInt($("playersLimit").value || "0", 10);
+        if (!Number.isFinite(off) || off < 0) throw new Error("offset tidak valid");
+        if (!Number.isFinite(lim) || lim <= 0) throw new Error("limit tidak valid");
+
+        $("playersList").textContent = "Loading players...";
+        $("playersMeta").textContent = "";
+
+        const page = await contract.getRoundPlayersPaged(roundId, off, lim);
+        const lines = [];
+        for (let i = 0; i < page.length; i++) {
+          lines.push((off + i) + ": " + page[i]);
+        }
+
+        $("playersList").textContent = "Total aktif terload: " + page.length + "\n" + lines.join("\n");
+        $("playersMeta").textContent = "Tip: gunakan offset/limit untuk paging.";
+      }
+
+      // wire events
+      $("btnConnect").addEventListener("click", async () => {
+        try {
+          enableActions(false);
+          log("Menghubungkan wallet...");
+          await connect();
+          ensureSeedLoaded();
+          await refreshRound();
+          log("Siap! Pilih seed lalu Enter → Reveal.");
+        } catch (e) {
+          setStatus("error", "bad");
+          log("Error: " + (e?.message || String(e)));
+          enableActions(false);
+        }
+      });
+
+      $("btnRefresh").addEventListener("click", async () => {
+        try {
+          log("Refresh round...");
+          await refreshRound();
+          log("Round di-refresh ✅.");
+        } catch (e) {
+          log("Error refresh: " + (e?.message || String(e)));
+        }
+      });
+
+      $("btnGenSeed").addEventListener("click", async () => {
+        try {
+          const seedBytes = ethers.randomBytes(32);
+          const seed = ethers.hexlify(seedBytes);
+          // ethers.keccak256 works fine with hex.
+          $("seed").value = seed;
+          localStorage.setItem(LS_SEED, seed);
+          $("seedHash").value = "";
+          localStorage.removeItem(LS_SEED_HASH);
+          log("Seed generated. Klik Compute seedHash.");
+        } catch (e) {
+          log("Error generate seed: " + (e?.message || String(e)));
+        }
+      });
+
+      $("btnCompute").addEventListener("click", async () => {
+        try {
+          computeSeedHash();
+          log("seedHash dihitung ✅. Sekarang bisa EnterClaw.");
+          await refreshRound();
+        } catch (e) {
+          log("Error compute: " + (e?.message || String(e)));
