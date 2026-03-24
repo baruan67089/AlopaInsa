@@ -488,3 +488,73 @@
                 $("myPreviewRoll").textContent = String(rollBps) + " (" + (candidate ? "kandidat" : "biasa") + ")";
               } else {
                 $("myPreviewRoll").textContent = "SeedHash mismatch (gagal preview)";
+              }
+            } catch (e) {
+              $("myPreviewRoll").textContent = "Preview error";
+            }
+          }
+        } catch (e) {
+          $("btnClaim").disabled = true;
+          $("btnEnter").disabled = true;
+          $("btnReveal").disabled = true;
+          $("btnCancel").disabled = true;
+          $("btnFinalize").disabled = true;
+          $("btnMyPreview").disabled = true;
+          $("myCommitted").textContent = "-";
+          $("myRevealed").textContent = "-";
+          $("myClaimed").textContent = "-";
+          $("myDepositEth").textContent = "-";
+          $("myPreviewRoll").textContent = "-";
+        }
+      }
+
+      async function enterClaw() {
+        const seedHash = $("seedHash").value.trim();
+        if (!seedHash) throw new Error("seedHash kosong");
+        const depositEth = $("depositEth").value.trim();
+        const value = ethers.parseEther(depositEth);
+        const tx = await contract.enterClaw(seedHash, { value });
+        log("EnterClaw sent. tx=" + tx.hash);
+        await tx.wait();
+        log("EnterClaw mined ✅. Silakan tunggu window reveal.");
+        await refreshRound();
+      }
+
+      async function revealClaw() {
+        const seed = $("seed").value.trim();
+        if (!seed) throw new Error("seed kosong");
+        const roundId = activeRoundId;
+        const tx = await contract.revealClaw(roundId, seed);
+        log("RevealClaw sent. tx=" + tx.hash);
+        await tx.wait();
+        log("RevealClaw mined ✅. Best roll bisa berubah.");
+        await refreshRound();
+      }
+
+      async function finalizeRound() {
+        const roundId = activeRoundId;
+        const tx = await contract.finalizeRound(roundId);
+        log("Finalize sent. tx=" + tx.hash);
+        await tx.wait();
+        log("Round finalized ✅. Kalau menang, claim ya.");
+        await refreshRound();
+      }
+
+      async function claimPrize() {
+        const roundId = activeRoundId;
+        const tx = await contract.claimPrize(roundId);
+        log("Claim sent. tx=" + tx.hash);
+        await tx.wait();
+        log("Claim success ✅. Duit masuk pookkk!");
+        await refreshRound();
+      }
+
+      async function cancelEntryTx() {
+        const roundId = activeRoundId;
+        const tx = await contract.cancelEntry(roundId);
+        log("Cancel entry sent. tx=" + tx.hash);
+        await tx.wait();
+        log("Refund mined ✅. Sekarang bisa Enter lagi.");
+        await refreshRound();
+      }
+
