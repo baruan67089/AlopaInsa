@@ -208,3 +208,73 @@
         </div>
         <div class="pill" id="statusPill">Status: belum connect</div>
       </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h2>1) Koneksi + Baca Round</h2>
+        <div class="sub">Tempel alamat kontrak, lalu connect wallet. UI akan ambil info round + best-roll.</div>
+
+        <label>Contract address</label>
+        <input id="contractAddress" placeholder="paste address kontrak Atunga" />
+
+        <div class="btns">
+          <button class="primary" id="btnConnect">Connect Wallet</button>
+          <button class="warn" id="btnRefresh" disabled>Refresh Round</button>
+        </div>
+
+        <div class="kv">
+          <div class="k">Wallet</div><div class="v" id="walletAddr">-</div>
+          <div class="k">Current roundId</div><div class="v" id="roundId">-</div>
+          <div class="k">Commit ends</div><div class="v" id="commitEnds">-</div>
+          <div class="k">Reveal ends</div><div class="v" id="revealEnds">-</div>
+          <div class="k">Commit countdown</div><div class="v" id="commitCountdown">-</div>
+          <div class="k">Reveal countdown</div><div class="v" id="revealCountdown">-</div>
+          <div class="k">Min deposit</div><div class="v" id="minDeposit">-</div>
+          <div class="k">Win odds (bps)</div><div class="v" id="winOdds">-</div>
+          <div class="k">Fee (bps)</div><div class="v" id="feeBps">-</div>
+          <div class="k">Max entries</div><div class="v" id="maxEntries">-</div>
+          <div class="k">Best winner</div><div class="v" id="bestWinner">-</div>
+          <div class="k">Best roll (bps)</div><div class="v" id="bestRoll">-</div>
+          <div class="k">My committed</div><div class="v" id="myCommitted">-</div>
+          <div class="k">My revealed</div><div class="v" id="myRevealed">-</div>
+          <div class="k">My claimed</div><div class="v" id="myClaimed">-</div>
+          <div class="k">My deposit (ETH)</div><div class="v" id="myDepositEth">-</div>
+          <div class="k">Preview roll (bps)</div><div class="v" id="myPreviewRoll">-</div>
+        </div>
+
+        <div class="small">
+          Catatan: commit/reveal mengunci dana di dalam kontrak sampai round finalize.
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>2) Seed + Enter/ReveaI</h2>
+        <div class="sub">UI simpan seed di browser (localStorage). Tekan tombol supaya gampang.</div>
+
+        <label>Seed (bytes32)</label>
+        <input id="seed" placeholder="akan dibuat otomatis" />
+        <div class="btns">
+          <button class="warn" id="btnGenSeed">Generate Seed</button>
+          <button class="primary" id="btnCompute">Compute seedHash</button>
+        </div>
+
+        <label>SeedHash (bytes32)</label>
+        <input id="seedHash" placeholder="akan dihitung dari seed" />
+
+        <label>Deposit amount (ETH)</label>
+        <input id="depositEth" value="0.001" />
+
+        <div class="btns">
+          <button id="btnEnter" class="primary" disabled>EnterClaw</button>
+          <button id="btnReveal" class="warn" disabled>RevealClaw</button>
+          <button id="btnCancel" class="bad" disabled>Cancel Entry</button>
+        </div>
+
+        <div class="btns">
+          <button id="btnFinalize" disabled>Finalize Round</button>
+          <button id="btnClaim" disabled>Claim Prize</button>
+        </div>
+
+        <label>Pemain aktif (paged)</label>
+        <div class="row">
