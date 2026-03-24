@@ -348,3 +348,73 @@
         $("btnFinalize").disabled = !ok;
         $("btnClaim").disabled = !ok;
         $("btnLoadPlayers").disabled = !ok;
+        $("btnMyPreview").disabled = !ok;
+        $("btnRefresh").disabled = !ok;
+      }
+
+      function ensureSeedLoaded() {
+        const seed = localStorage.getItem(LS_SEED);
+        const seedHash = localStorage.getItem(LS_SEED_HASH);
+        if (seed) $("seed").value = seed;
+        if (seedHash) $("seedHash").value = seedHash;
+      }
+
+      function computeSeedHash() {
+        const seed = $("seed").value.trim();
+        if (!seed) throw new Error("seed kosong");
+        const seedHash = ethers.keccak256(seed);
+        $("seedHash").value = seedHash;
+        localStorage.setItem(LS_SEED, seed);
+        localStorage.setItem(LS_SEED_HASH, seedHash);
+        return seedHash;
+      }
+
+      async function connect() {
+        const addr = $("contractAddress").value.trim();
+        if (!addr) throw new Error("contract address kosong");
+        if (!window.ethereum) throw new Error("window.ethereum tidak ditemukan");
+
+        provider = new ethers.BrowserProvider(window.ethereum);
+        await provider.send("eth_requestAccounts", []);
+        signer = await provider.getSigner();
+        walletAddr = await signer.getAddress();
+        contract = new ethers.Contract(addr, ABI, signer);
+
+        $("walletAddr").textContent = walletAddr;
+        setStatus("connect OK", "good");
+        $("btnRefresh").disabled = false;
+        enableActions(true);
+        log("Connected. Siap baca round & transaksi.");
+      }
+
+      function formatRemaining(sec) {
+        sec = Math.max(0, sec | 0);
+        const m = Math.floor(sec / 60);
+        const s = sec % 60;
+        if (m > 0) return m + "m " + String(s).padStart(2, "0") + "s";
+        return s + "s";
+      }
+
+      function updateCountdownUI() {
+        const now = Math.floor(Date.now() / 1000);
+        if (commitEndsAtSec > 0) {
+          const left = commitEndsAtSec - now;
+          $("commitCountdown").textContent = left > 0 ? formatRemaining(left) : "ended";
+        }
+        if (revealEndsAtSec > 0) {
+          const left = revealEndsAtSec - now;
+          $("revealCountdown").textContent = left > 0 ? formatRemaining(left) : "ended";
+        }
+      }
+
+      async function refreshRound() {
+        if (!contract) throw new Error("Belum connect");
+        activeRoundId = await contract.currentRoundId();
+        $("roundId").textContent = activeRoundId.toString();
+
+        const v = await contract.getRoundView(activeRoundId);
+        const [
+          started, finalized,
+          commitEndsAt, revealEndsAt,
+          minDepositWei, winOddsBps, feeBps, maxEntries,
+          roundSalt, entryCount, totalPotWei,
