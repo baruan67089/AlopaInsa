@@ -418,3 +418,73 @@
           commitEndsAt, revealEndsAt,
           minDepositWei, winOddsBps, feeBps, maxEntries,
           roundSalt, entryCount, totalPotWei,
+          bestWinner, bestRollBps,
+          winner, prizeWei, feeWei
+        ] = v;
+
+        $("commitEnds").textContent = Number(commitEndsAt).toString();
+        $("revealEnds").textContent = Number(revealEndsAt).toString();
+        $("minDeposit").textContent = ethers.formatEther(minDepositWei);
+        $("winOdds").textContent = Number(winOddsBps);
+        $("feeBps").textContent = Number(feeBps);
+        $("maxEntries").textContent = Number(maxEntries);
+        $("bestWinner").textContent = (bestWinner || "").toString();
+        $("bestRoll").textContent = Number(bestRollBps);
+
+        const now = Math.floor(Date.now() / 1000);
+        const canEnter = now < Number(commitEndsAt);
+        const canReveal = now >= Number(commitEndsAt) && now < Number(revealEndsAt);
+        const canFinalize = now >= Number(revealEndsAt);
+
+        commitEndsAtSec = Number(commitEndsAt);
+        revealEndsAtSec = Number(revealEndsAt);
+        updateCountdownUI();
+        if (!countdownTimer) countdownTimer = setInterval(updateCountdownUI, 1000);
+
+        await refreshMyState({ canEnter, canReveal, canFinalize, winner });
+      }
+
+      async function refreshMyState({ canEnter, canReveal, canFinalize, winner }) {
+        try {
+          const roundId = activeRoundId;
+          if (!roundId) return;
+          const ticket = await contract.getMyTicket(roundId, walletAddr);
+
+          const myCommitted = ticket.seedHash && ticket.seedHash !== "0x0000000000000000000000000000000000000000000000000000000000000000";
+          const myRevealed = !!ticket.revealed;
+          const myClaimed = !!ticket.claimed;
+
+          $("myCommitted").textContent = myCommitted ? "Yes" : "No";
+          $("myRevealed").textContent = myRevealed ? "Yes" : "No";
+          $("myClaimed").textContent = myClaimed ? "Yes" : "No";
+          $("myDepositEth").textContent = ticket.amountWei ? ethers.formatEther(ticket.amountWei) : "0";
+
+          const seed = $("seed").value.trim();
+          const seedHash = $("seedHash").value.trim();
+          const hasSeed = !!seed;
+
+          // Enter / Reveal / Cancel buttons
+          $("btnEnter").disabled = !canEnter || myCommitted || !seedHash;
+          $("btnReveal").disabled = !canReveal || !myCommitted || myRevealed || myClaimed || !hasSeed;
+          $("btnCancel").disabled = !canEnter || !myCommitted || myRevealed || myClaimed;
+          $("btnFinalize").disabled = !canFinalize;
+
+          // Claim button: only enable if round is finalized AND wallet equals winner AND not claimed yet
+          const winnerAddr = winner ? winner.toString() : "";
+          const isWinner = winnerAddr && winnerAddr.toLowerCase() === walletAddr.toLowerCase();
+          const canClaim = canFinalize && isWinner && !myClaimed;
+          $("btnClaim").disabled = !canClaim;
+
+          // Preview roll (best-effort)
+          $("myPreviewRoll").textContent = "-";
+          $("btnMyPreview").disabled = !myCommitted || myRevealed || myClaimed || !hasSeed;
+          if (myCommitted && hasSeed) {
+            try {
+              const localSeedHash = ethers.keccak256(seed);
+              if (localSeedHash.toLowerCase() === ticket.seedHash.toLowerCase()) {
+                const out = await contract.previewRevealOutcome(roundId, walletAddr, seed);
+                const rollBps = Number(out[0]);
+                const candidate = !!out[1];
+                $("myPreviewRoll").textContent = String(rollBps) + " (" + (candidate ? "kandidat" : "biasa") + ")";
+              } else {
+                $("myPreviewRoll").textContent = "SeedHash mismatch (gagal preview)";
