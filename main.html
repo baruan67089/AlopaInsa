@@ -628,3 +628,70 @@
           await refreshRound();
         } catch (e) {
           log("Error compute: " + (e?.message || String(e)));
+        }
+      });
+
+      $("btnEnter").addEventListener("click", async () => {
+        try {
+          await enterClaw();
+        } catch (e) {
+          log("Enter gagal: " + (e?.message || String(e)));
+        }
+      });
+
+      $("btnReveal").addEventListener("click", async () => {
+        try {
+          await revealClaw();
+        } catch (e) {
+          log("Reveal gagal: " + (e?.message || String(e)));
+        }
+      });
+
+      $("btnCancel").addEventListener("click", async () => {
+        try {
+          await cancelEntryTx();
+        } catch (e) {
+          log("Cancel gagal: " + (e?.message || String(e)));
+        }
+      });
+
+      $("btnLoadPlayers").addEventListener("click", async () => {
+        try {
+          await loadPlayersPaged();
+        } catch (e) {
+          log("Load players gagal: " + (e?.message || String(e)));
+        }
+      });
+
+      $("btnMyPreview").addEventListener("click", async () => {
+        try {
+          await refreshRound();
+          log("Preview di-refresh ✅");
+        } catch (e) {
+          log("Preview gagal: " + (e?.message || String(e)));
+        }
+      });
+
+      $("btnFinalize").addEventListener("click", async () => {
+        try {
+          await finalizeRound();
+        } catch (e) {
+          log("Finalize gagal: " + (e?.message || String(e)));
+        }
+      });
+
+      $("btnClaim").addEventListener("click", async () => {
+        try {
+          await claimPrize();
+        } catch (e) {
+          log("Claim gagal: " + (e?.message || String(e)));
+        }
+      });
+
+      // init
+      ensureSeedLoaded();
+      log("Siap. Masukkan contract address → Connect → Generate Seed → Enter → Reveal.");
+    })();
+  </script>
+</body>
+</html>
