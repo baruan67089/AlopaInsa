@@ -278,3 +278,73 @@
 
         <label>Pemain aktif (paged)</label>
         <div class="row">
+          <input id="playersOffset" value="0" />
+          <input id="playersLimit" value="8" />
+        </div>
+        <div class="btns">
+          <button id="btnLoadPlayers" disabled>Load Players</button>
+          <button id="btnMyPreview" disabled>Preview Roll Saya</button>
+        </div>
+        <div class="log" id="playersList">Players belum di-load.</div>
+        <div class="small" id="playersMeta">-</div>
+
+        <div class="log" id="log">Log: siap.</div>
+      </div>
+    </div>
+
+    <div class="foot">
+      Dibuat dengan gaya “klakson boomer” dan rasa Indonesia.
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const { ethers } = window;
+      const $ = (id) => document.getElementById(id);
+
+      const ABI = [
+        "function currentRoundId() view returns (uint256)",
+        "function getRoundView(uint256) view returns (bool started,bool finalized,uint64 commitEndsAt,uint64 revealEndsAt,uint256 minDepositWei,uint16 winOddsBps,uint16 feeBps,uint32 maxEntries,bytes32 roundSalt,uint32 entryCount,uint256 totalPotWei,address bestWinner,uint16 bestRollBps,address winner,uint256 prizeWei,uint256 feeWei)",
+        "function roles() view returns (address boss,address nenek,address treasury)",
+        "function enterClaw(bytes32 seedHash) payable",
+        "function cancelEntry(uint256 roundId)",
+        "function revealClaw(uint256 roundId, bytes32 seed)",
+        "function finalizeRound(uint256 roundId)",
+        "function claimPrize(uint256 roundId)",
+        "function getMyTicket(uint256 roundId, address player) view returns (bytes32 seedHash,uint256 amountWei,bool revealed,bool claimed)",
+        "function previewRevealOutcome(uint256 roundId, address player, bytes32 seed) view returns (uint16 rollBps, bool candidate)",
+        "function getRoundPlayersPaged(uint256 roundId, uint256 offset, uint256 limit) view returns (address[] page)"
+      ];
+
+      const LS_SEED = "alopa.atunga.seed.v1";
+      const LS_SEED_HASH = "alopa.atunga.seedHash.v1";
+
+      let provider = null;
+      let signer = null;
+      let contract = null;
+      let walletAddr = null;
+      let activeRoundId = null;
+      let commitEndsAtSec = 0;
+      let revealEndsAtSec = 0;
+      let countdownTimer = null;
+
+      function log(msg) {
+        $("log").textContent = msg;
+      }
+
+      function setStatus(txt, tone) {
+        const pill = $("statusPill");
+        pill.textContent = "Status: " + txt;
+        if (!tone) return;
+        if (tone === "good") pill.style.color = "var(--good)";
+        if (tone === "warn") pill.style.color = "var(--warn)";
+        if (tone === "bad") pill.style.color = "var(--bad)";
+      }
+
+      function enableActions(ok) {
+        $("btnEnter").disabled = !ok;
+        $("btnReveal").disabled = !ok;
+        $("btnCancel").disabled = !ok;
+        $("btnFinalize").disabled = !ok;
+        $("btnClaim").disabled = !ok;
+        $("btnLoadPlayers").disabled = !ok;
