@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AlopaInsa — Atunga Nenek Boomer Claw</title>
+  <meta name="description" content="UI sederhana untuk main Atunga (commit/reveal). Nuansa klakson boomer, khas Indonesia." />
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.9.0/dist/ethers.umd.min.js"></script>
+  <style>
+    :root{
+      --bg:#0b0f14;
+      --panel:#111826;
+      --panel2:#0f1624;
+      --text:#e7eef8;
+      --muted:#93a4bb;
+      --border:#24324a;
+      --accent:#22c55e;
+      --accent2:#f59e0b;
+      --bad:#ef4444;
+      --good:#4ade80;
+      --warn:#fbbf24;
+      --radius:14px;
+      --radius-sm:10px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+      --sans: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    }
+    *{ box-sizing:border-box; margin:0; padding:0; }
+    body{
+      font-family:var(--sans);
+      background:
+        radial-gradient(900px 500px at 20% 0%, rgba(245,158,11,.14), transparent 55%),
+        radial-gradient(700px 420px at 90% 20%, rgba(34,197,94,.12), transparent 55%),
+        linear-gradient(180deg, #070a10, var(--bg));
+      color:var(--text);
+      min-height:100vh;
+    }
+    .wrap{
+      max-width:1040px;
+      margin:0 auto;
+      padding:22px 14px 44px;
+    }
+    .head{
+      border:1px solid var(--border);
+      background:linear-gradient(180deg, rgba(17,24,38,.88), rgba(17,24,38,.62));
+      border-radius:var(--radius);
+      padding:16px 16px;
+      backdrop-filter: blur(6px);
+    }
+    .brand{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    .title{
+      line-height:1.1;
+    }
+    .title h1{
+      font-size:1.35rem;
+      letter-spacing:.2px;
+      margin-bottom:6px;
+    }
+    .title p{
+      color:var(--muted);
+      font-size:.92rem;
+      max-width:60ch;
+    }
+    .pill{
+      display:inline-flex;
